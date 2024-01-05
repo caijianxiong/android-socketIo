@@ -14,4 +14,5 @@ dependencyResolutionManagement {
 }
 rootProject.name = "SocketIoDemo"
 include ':app'
-include ':server'
+//include ':server'
+include ':serverdemo'

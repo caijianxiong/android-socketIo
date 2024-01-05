@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import io.socket.client.IO
 import io.socket.client.Socket
 import io.socket.emitter.Emitter
+import javax.net.ssl.SSLContext
 
 
 class MainActivity : AppCompatActivity() {
@@ -56,16 +57,18 @@ class MainActivity : AppCompatActivity() {
     private fun initSocket() {
         try {
 
-            val url = "http://192.168.3.2:9423"
+            val url = "https://192.168.101.54:9423"
 //            val url = "http://192.168.0.10:9423"
 
 
             val option = IO.Options()
-            option.path = "/socket"
+//            option.path = "/socket"
             option.transports = arrayOf("websocket", "xhr-polling", "jsonp-polling")
             option.reconnectionAttempts = 3
             option.reconnectionDelay = 3000;
-            option.timeout = 500;
+            option.timeout = 500
+
+            var  sllContext:SSLContext=SSLContext.getInstance("TLSv1.2")
 
             socket = IO.socket(url, option)
             socket.on(Socket.EVENT_CONNECT, Emitter.Listener {
@@ -73,7 +76,7 @@ class MainActivity : AppCompatActivity() {
             })
             socket.on(Socket.EVENT_CONNECT_ERROR, Emitter.Listener { args ->
                 for (o in args) {
-                    Log.e("AAA", "活动连接错误2$o")
+                    Log.e("AAA", "活动连接错误2:", o as Throwable?)
                 }
             })
 
@@ -85,7 +88,7 @@ class MainActivity : AppCompatActivity() {
 
             socket.on(Socket.EVENT_DISCONNECT, Emitter.Listener { args ->
                 for (o in args) {
-                    Log.e("AAA", "断开连接4$o")
+                    Log.e("AAA", "断开连接4:$o")
                 }
             })
 
@@ -101,6 +104,7 @@ class MainActivity : AppCompatActivity() {
             })
 
             socket.connect()
+            tv_msg.setText(url)
 
         } catch (e: Exception) {
             Log.e("TAG", "initSocket: ", e)
