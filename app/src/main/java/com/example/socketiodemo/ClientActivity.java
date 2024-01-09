@@ -13,6 +13,7 @@ import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
 public class ClientActivity extends AppCompatActivity {
+    
     private io.socket.client.Socket socket;
     private Button bt_connect, bt_send, bt_disconnect, bt_server;
     private TextView tv_msg;
@@ -52,13 +53,19 @@ public class ClientActivity extends AppCompatActivity {
 //                startService(intent);
             }
         });
+        bt_disconnect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                socket.close();
+            }
+        });
     }
 
 
     private void initSocket() {
         try {
 
-            String url = "http://192.168.101.54:9423";
+            String url = "http://192.168.101.165:9423";
 //            val url = "http://192.168.0.10:9423"
 
 
@@ -75,21 +82,21 @@ public class ClientActivity extends AppCompatActivity {
             socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
                 @Override
                 public void call(Object... args) {
-                    Log.e("AAA", "第一次连接成功1");
+                    Log.e(TAG, "第一次连接成功1");
                 }
             });
             socket.on(Socket.EVENT_CONNECT_ERROR, new Emitter.Listener() {
                 @Override
                 public void call(Object... args) {
                     for (Object o : args) {
-                        Log.e("AAA", "活动连接错误2:", (Throwable) o);
+                        Log.e(TAG, "活动连接错误2:", (Throwable) o);
                     }
                 }
             });
 
 //            socket.on(Socket.EVENT_CONNECT_TIMEOUT, Emitter.Listener { args ->
 //                for (o in args) {
-//                    Log.e("AAA", "活动连接超时3$o")
+//                    Log.e(TAG, "活动连接超时3$o")
 //                }
 //            })
 
@@ -97,14 +104,14 @@ public class ClientActivity extends AppCompatActivity {
                 @Override
                 public void call(Object... args) {
                     for (Object o : args) {
-                        Log.e("AAA", "断开连接4:$o");
+                        Log.w(TAG, "断开连接4:"+o);
                     }
                 }
             });
 
 //            socket.on(Socket.EVENT_CONNECTING, Emitter.Listener { args ->
 //                for (o in args) {
-//                    Log.e("AAA", "正在连接5$o")
+//                    Log.e(TAG, "正在连接5$o")
 //                }
 //            })
 
@@ -112,7 +119,15 @@ public class ClientActivity extends AppCompatActivity {
                 @Override
                 public void call(Object... args) {
                     tv_msg.setText(args[0].toString());
-                    Log.e("AAA", "服务器发来msg：" + args[0]);
+                    Log.w(TAG, "服务器发来msg：" + args[0]);
+                }
+            });
+
+            socket.on("disconnect", new Emitter.Listener() {
+
+                @Override
+                public void call(Object... args) {
+                    Log.w(TAG, "服务器发来disconnect：" + args[0]);
                 }
             });
 

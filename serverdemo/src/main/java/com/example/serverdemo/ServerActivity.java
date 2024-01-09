@@ -2,8 +2,11 @@ package com.example.serverdemo;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.corundumstudio.socketio.AckRequest;
@@ -25,13 +28,29 @@ public class ServerActivity extends AppCompatActivity {
     private final int port = 9423;
     private SocketIOServer mServer;
     private TextView textView;
+    private Button bt_connect, bt_send, bt_disconnect, bt_server;
 
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         textView = findViewById(R.id.tv_address);
+        bt_connect=findViewById(R.id.bt_connect);
+        bt_send=findViewById(R.id.bt_send);
+        bt_disconnect=findViewById(R.id.bt_disconnect);
         init();
+        initListener();
+
+    }
+
+    private void initListener() {
+        bt_disconnect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mServer.stop();
+            }
+        });
     }
 
     private void init() {
@@ -66,6 +85,8 @@ public class ServerActivity extends AppCompatActivity {
                 @Override
                 public void onDisconnect(SocketIOClient client) {
                     Log.i(TAG, "onDisconnect: ");
+                    client.sendEvent("disconnect from server close");
+                    client.disconnect();
                 }
             });
 
@@ -73,14 +94,15 @@ public class ServerActivity extends AppCompatActivity {
             mServer.addEventListener("main", String.class, new DataListener<String>() {
                 @Override
                 public void onData(SocketIOClient client, String data, AckRequest ackSender) throws Exception {
-                    Log.i(TAG, "onData: ");
+                    Log.i(TAG, "onData: " + data);
+                    client.sendEvent("main","yes I rev client msg ,this server callback");
                 }
             });
 
             mServer.addPingListener(new PingListener() {
                 @Override
                 public void onPing(SocketIOClient client) {
-                    Log.i(TAG, "onPing: ");
+                    Log.i(TAG, "rev onPing: ");
                 }
             });
 
