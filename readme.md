@@ -68,7 +68,8 @@
 上面的命令应该不难理解，就是你给密钥文件设置的生成位置，key alias、key password和key store、validity ，回车后，需要继续按照提示输入相关信息，依次填写好信息后，输入 Y 确认信息即可。上面一行的storepass为myKeyStorePass，别名为selfsigned，有效期为360天。
 
 3，然后用上面安装好的密钥库资源管理器KeyStore Explorer去找到这个keystore.bks文件打开，打开的时候输入上面的storepass密码就行(ps:我被这里坑了好久，记住要输入storepass的这个密码，不是keypass的密码)，打开后，找到Tools--->change KeyStore Type--->BKS保存就行。
+
 4， 将上一步中生成的keystore.bks做了type转换后，将文件放入到项目的main->res->raw目录下，如果没这个文件夹，新建一个就行
 
-5，具体使用见demo源码
+5，具体使用见demo源码，客户端和服务端使用的是同一个证书文件，其他平台如web等证书类型不是bks，转换工具应该可以转换成其使用的类型如pks,pcs等
 
