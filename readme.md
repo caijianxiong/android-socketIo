@@ -1,3 +1,5 @@
+## 这是一个安卓环境下使用socket io库客户端和服务端通信的demo
+> 基于https通信搞了好久，安卓环境下要自己生成bks证书
 1.  app module是client demo,serverdemo即为服务端demo
 2.  使用时client和server两台机器必须在同一wifi下（局域网）
 3.  server端IP自动获取，client连接IP以服务端为准修改如下
