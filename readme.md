@@ -45,4 +45,4 @@
             exclude group: 'org.json', module: 'json'
         }
 
-[![image.png](https://note.youdao.com/yws/res/2129/WEBRESOURCEc5e986b328355e8042654954261af395)](https://github.com/caijianxiong/android-socketIo/blob/master/readimg01.jpg)https://github.com/caijianxiong/android-socketIo/blob/master/readimg01.jpg
+!\[image]\([ttps://github.com/caijianxiong/android-socketIo/blob/master/readimg01.jpg](https://github.com/caijianxiong/android-socketIo/blob/master/readimg01.jpg))
