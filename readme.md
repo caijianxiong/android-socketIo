@@ -45,4 +45,5 @@
             exclude group: 'org.json', module: 'json'
         }
 
-!\[image]\([ttps://github.com/caijianxiong/android-socketIo/blob/master/readimg01.jpg](https://github.com/caijianxiong/android-socketIo/blob/master/readimg01.jpg))
+
+![image](https://github.com/caijianxiong/android-socketIo/blob/master/readimg01.jpg)
