@@ -8,12 +8,29 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+import java.util.concurrent.TimeUnit;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
+
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
+import okhttp3.OkHttpClient;
 
 public class ClientActivity extends AppCompatActivity {
-    
+
+    private static OkHttpClient mOkHttpClient;
     private io.socket.client.Socket socket;
     private Button bt_connect, bt_send, bt_disconnect, bt_server;
     private TextView tv_msg;
@@ -65,8 +82,10 @@ public class ClientActivity extends AppCompatActivity {
     private void initSocket() {
         try {
 
-            String url = "http://192.168.101.165:9423";
-//            val url = "http://192.168.0.10:9423"
+            prepareOkHttpClient();
+
+//            String url = "http://192.168.101.165:9423";
+            String url = "https://192.168.3.69:9423";
 
 
             IO.Options option = new IO.Options();
@@ -74,7 +93,16 @@ public class ClientActivity extends AppCompatActivity {
             option.transports = new String[]{"websocket", "xhr-polling", "jsonp-polling"};
             option.reconnectionAttempts = 3;
             option.reconnectionDelay = 3000;
-            option.timeout = 500;
+//            option.timeout = 1000;
+
+            //
+            option.secure = true;
+            option.forceNew = true;
+            option.callFactory = mOkHttpClient;
+            option.webSocketFactory = mOkHttpClient;
+
+
+            //
 
 //            var  sllContext:SSLContext=SSLContext.getInstance("TLSv1.2")
 
@@ -94,26 +122,34 @@ public class ClientActivity extends AppCompatActivity {
                 }
             });
 
-//            socket.on(Socket.EVENT_CONNECT_TIMEOUT, Emitter.Listener { args ->
-//                for (o in args) {
-//                    Log.e(TAG, "活动连接超时3$o")
-//                }
-//            })
+            socket.on(Socket.EVENT_CONNECT_TIMEOUT, new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+                    for (Object o : args) {
+                        Log.e(TAG, "活动连接超时3$" + o);
+                    }
+                }
+
+            });
 
             socket.on(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
                 @Override
                 public void call(Object... args) {
                     for (Object o : args) {
-                        Log.w(TAG, "断开连接4:"+o);
+                        Log.w(TAG, "断开连接4:" + o);
                     }
                 }
             });
 
-//            socket.on(Socket.EVENT_CONNECTING, Emitter.Listener { args ->
-//                for (o in args) {
-//                    Log.e(TAG, "正在连接5$o")
-//                }
-//            })
+            socket.on(Socket.EVENT_CONNECTING, new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+                    for (Object o : args) {
+                        Log.e(TAG, "正在连接5$" + o);
+                    }
+                }
+
+            });
 
             socket.on("main", new Emitter.Listener() {
                 @Override
@@ -138,5 +174,45 @@ public class ClientActivity extends AppCompatActivity {
             Log.e("TAG", "initSocket: ", e);
         }
     }
+
+
+    private void prepareOkHttpClient() throws GeneralSecurityException, IOException {
+
+        InputStream inputStream = getResources().getAssets().open("keystore.bks");
+        Log.i(TAG, "init -----type: " + KeyStore.getDefaultType());
+        KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+        ks.load(inputStream, "kandao".toCharArray());
+//        configuration.setKeyStoreFormat(KeyStore.getDefaultType());
+
+//        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+//        kmf.init(ks, "kandao".toCharArray());
+//
+//        TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+        Log.i(TAG, "prepareOkHttpClient01: " + TrustManagerFactory.getDefaultAlgorithm());
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        tmf.init(ks);
+
+        Log.i(TAG, "prepareOkHttpClient02: " + javax.net.ssl.KeyManagerFactory.getDefaultAlgorithm());
+        KeyManagerFactory kmf = javax.net.ssl.KeyManagerFactory.getInstance(javax.net.ssl.KeyManagerFactory.getDefaultAlgorithm());
+        kmf.init(ks, "kandao".toCharArray());
+
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+
+        mOkHttpClient = new OkHttpClient.Builder()
+                .hostnameVerifier(new HostnameVerifier() {
+                    public boolean verify(String hostname, SSLSession sslSession) {
+//                        return hostname.equals("localhost");
+                        return true;
+                    }
+                })
+                .readTimeout(3, TimeUnit.SECONDS)
+                .writeTimeout(3, TimeUnit.SECONDS)
+                .retryOnConnectionFailure(true)
+                .sslSocketFactory(sslContext.getSocketFactory(),
+                        (X509TrustManager) tmf.getTrustManagers()[0])
+                .build();
+    }
+
 
 }

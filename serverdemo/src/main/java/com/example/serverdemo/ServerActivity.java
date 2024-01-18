@@ -21,6 +21,11 @@ import com.corundumstudio.socketio.listener.DisconnectListener;
 import com.corundumstudio.socketio.listener.PingListener;
 import com.corundumstudio.socketio.listener.PongListener;
 
+import java.io.InputStream;
+import java.security.KeyStore;
+
+import javax.net.ssl.KeyManagerFactory;
+
 public class ServerActivity extends AppCompatActivity {
 
     private String TAG = "server_" + this.getClass().getSimpleName();
@@ -36,9 +41,9 @@ public class ServerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         textView = findViewById(R.id.tv_address);
-        bt_connect=findViewById(R.id.bt_connect);
-        bt_send=findViewById(R.id.bt_send);
-        bt_disconnect=findViewById(R.id.bt_disconnect);
+        bt_connect = findViewById(R.id.bt_connect);
+        bt_send = findViewById(R.id.bt_send);
+        bt_disconnect = findViewById(R.id.bt_disconnect);
         init();
         initListener();
 
@@ -66,6 +71,18 @@ public class ServerActivity extends AppCompatActivity {
             Configuration configuration = new Configuration();
             configuration.setHostname(hostName);
             configuration.setPort(port);
+            //
+            configuration.setKeyStorePassword("kandao");
+            InputStream inputStream = getResources().getAssets().open("keystore.bks");
+            Log.i(TAG, "init -----type: " + KeyStore.getDefaultType());
+            configuration.setKeyStoreFormat(KeyStore.getDefaultType());
+//            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+//            keyStore.load(inputStream, "kandao".toCharArray());
+//            KeyManagerFactory KeyManagerFactory = javax.net.ssl.KeyManagerFactory.getInstance(javax.net.ssl.KeyManagerFactory.getDefaultAlgorithm());
+//            KeyManagerFactory.init(keyStore, "kandao".toCharArray());
+            configuration.setKeyStore(inputStream);
+
+            //
             SocketConfig socketConfig = new SocketConfig();
             socketConfig.setReuseAddress(true);
             configuration.setSocketConfig(socketConfig);
@@ -95,7 +112,7 @@ public class ServerActivity extends AppCompatActivity {
                 @Override
                 public void onData(SocketIOClient client, String data, AckRequest ackSender) throws Exception {
                     Log.i(TAG, "onData: " + data);
-                    client.sendEvent("main","yes I rev client msg ,this server callback");
+                    client.sendEvent("main", "yes I rev client msg ,this server callback");
                 }
             });
 
